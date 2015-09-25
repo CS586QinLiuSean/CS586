@@ -82,8 +82,9 @@ public class MyPage {
                     //ID = String.valueOf(IDrandom.nextInt(50000));
                 	ID=String.valueOf(i);
                     name=FirstNames.get(firstNamerandom.nextInt(7000))+" "+LastNames.get(lastRandom.nextInt(80000));
-                    nationality=NationArray[nationRandom.nextInt(10)];
-                    CountryCode = countryCodeRandom.nextInt(10) + 1;
+                    CountryCode=nationRandom.nextInt(10);
+                    nationality=NationArray[CountryCode];
+                    CountryCode = CountryCode + 1;
                     hobby=Hobby[hobbyRandom.nextInt(6)];
                     record = ID + "," + name + "," + nationality + "," + CountryCode + "," + hobby + "\r\n";
                    FW.write(record);
