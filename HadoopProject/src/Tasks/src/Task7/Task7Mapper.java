@@ -23,6 +23,8 @@ public class Task7Mapper extends MapReduceBase implements Mapper<LongWritable, T
 			
 		} catch (NumberFormatException e) {
 			output.collect(new Text(line[0]), new Text(line[1]+","+line[2]+","+line[3]+","+line[4]));
+		} catch(ArrayIndexOutOfBoundsException ae){
+			return;
 		}
 		
 	}

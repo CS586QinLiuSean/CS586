@@ -24,7 +24,7 @@ public class Task4Reducer extends MapReduceBase implements Reducer<Text, Text, T
 					count++;
 				}
 			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
+				
 				name = record[0];
 			}
 		}

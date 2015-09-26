@@ -1,4 +1,4 @@
-package Task4;
+package TaskDesignByOurselves;
 
 import java.io.IOException;
 
@@ -10,23 +10,23 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 
-public class Task4Mapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
+public class TaskOursMapper  extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 	private static int oneUnit = 1;
 
 	@Override
 	public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter report)
 			throws IOException {
-		String[] line = value.toString().split(",");
 		
-		try {
-			//Friends table
-			int personID=Integer.parseInt(line[1]);						
-			output.collect(new Text(line[2]), new Text(String.valueOf(1)));		
+		String[] line = value.toString().split(",");
+		try {		
+			int myID=Integer.parseInt(line[1]);			
+			//Friend
+			output.collect(new Text(line[1]), new Text(line[4]+",friend"));	
 			
 		} catch (NumberFormatException e) {
-			//Mypage table		
-			output.collect(new Text(line[0]), new Text(line[1]));	
-		}
+			//Mypage class			
+			output.collect(new Text(line[0]), new Text(line[1]+",mypage"));		
+		} 
 		
 	}
 }
