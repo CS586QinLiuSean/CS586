@@ -1,0 +1,18 @@
+Last Question:
+What's the majority kind of friendship (Desc) does each Facebook User have?
+
+
+
+Query8:
+D= GROUP Friends BY (PersonID, Des);
+E= FOREACH D GENERATE group, COUNT(Friends) as num;
+F= GROUP E BY group.PersonID;
+G= FOREACH F{
+ SORT= ORDER E BY num DESC;
+ SORT2= LIMIT SORT 1;
+ GENERATE FLATTEN(SORT2.group);
+}
+H= FOREACH MyPage GENERATE ID, Name;
+I= JOIN G BY null::group.PersonID, H BY ID;
+J= FOREACH I GENERATE H::Name, G::null::group.Des;
+DUMP J;
