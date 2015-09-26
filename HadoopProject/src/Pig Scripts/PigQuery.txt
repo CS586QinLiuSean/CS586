@@ -1,0 +1,71 @@
+AccessLog = LOAD '/user/hadoop/Facebook/AccessLog' USING PigStorage (',') AS (AccessId: int, ByWho: int, WhatPage: int, TypeOfAccess: chararray, AccessTime: int);
+MyPage = LOAD '/user/hadoop/Facebook/MyPage' USING PigStorage(',') AS (ID: int, Name: chararray, Nationality: chararray, CountryCode: int,Hobby: chararray);
+Friends = LOAD '/user/hadoop/Facebook/Friends' USING PigStorage(',') AS (FriendRel: int, PersonID: int, MyFriend: int, DateofFriend: int, Des: chararray);
+
+Query1:
+A = Filter MyPage BY Nationality == 'China';
+B = FOREACH A GENERATE Name, Hobby;
+STORE B INTO '/user/hadoop/Facebook/Output/Query1' USING PigStorage(',');
+
+Query2:
+C = GROUP MyPage BY Nationality;
+D = FOREACH C GENERATE group, COUNT(MyPage.ID);
+STORE D INTO '/user/hadoop/Facebook/Output/Query2' USING PigStorage(',');
+
+Query3:
+E = GROUP AccessLog BY WhatPage;
+F = FOREACH E GENERATE FLATTEN(group), COUNT(AccessLog.AccessId) as count;
+G = ORDER F BY count DESC;
+H = LIMIT G 10;
+STORE H INTO '/user/hadoop/Facebook/Output/Query3' USING PigStorage(',');
+
+Query4:
+I= GROUP Friends BY PersonID;
+J= FOREACH I GENERATE FLATTEN(group), COUNT(Friends.MyFriend) as happiness;
+K= JOIN MyPage BY ID, J BY group;
+L= FOREACH K GENERATE MyPage::Name, J::happiness;
+STORE L INTO '/user/hadoop/Facebook/Output/Query4' USING PigStorage(',');
+
+Query5:
+M= GROUP AccessLog BY ByWho;
+N= FOREACH M {
+unique_WhatPage= DISTINCT AccessLog.WhatPage;
+GENERATE group, COUNT(AccessLog.AccessId) as total, COUNT(unique_WhatPage) as favorite;
+};
+STORE N INTO '/user/hadoop/Facebook/Output/Query5' USING PigStorage(',');
+
+Query6:
+O= Group Friends BY (PersonID, MyFriend);
+P= FOREACH O GENERATE FLATTEN(group);
+Q= Group AccessLog BY (ByWho,WhatPage);
+R= FOREACH Q GENERATE FLATTEN(group);
+S= JOIN P BY group::PersonID LEFT OUTER, R BY group::ByWho;
+T= Filter S BY (R::group::WhatPage is null);
+X= GROUP T BY P::group::PersonID;
+U= FOREACH MyPage GENERATE ID,Name;
+V= JOIN X BY group, U BY ID;
+W= FOREACH V GENERATE U::Name;
+STORE W INTO '/user/hadoop/Facebook/Output/Query6' USING PigStorage(',');
+
+Query7:
+X= FOREACH MyPage GENERATE ID,Name;
+Y= GROUP AccessLog BY ByWho;
+Z= FOREACH Y GENERATE FLATTEN(group),(1000000 - MAX(AccessLog.AccessTime)) as length;
+A= FILTER Z BY length > 10;
+B= JOIN X BY ID, A BY group;
+C= FOREACH B GENERATE X::Name;
+STORE C INTO '/user/hadoop/Facebook/Output/Query7' USING PigStorage(',');
+
+Query8:
+D= GROUP Friends BY (PersonID, Des);
+E= FOREACH D GENERATE group, COUNT(Friends) as num;
+F= GROUP E BY group.PersonID;
+G= FOREACH F{
+ SORT= ORDER E BY num DESC;
+ SORT2= LIMIT SORT 1;
+ GENERATE FLATTEN(SORT2.group);
+}
+H= FOREACH MyPage GENERATE ID, Name;
+I= JOIN G BY null::group.PersonID, H BY ID;
+J= FOREACH I GENERATE H::Name, G::null::group.Des;
+STORE J INTO '/user/hadoop/Facebook/Output/Query8' USING PigStorage(',');
